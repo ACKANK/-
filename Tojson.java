@@ -32,20 +32,20 @@ public class Tojson {
 		{
 				
 				stringBuilder.append("{\"time\":\"");
-				stringBuilder.append(abc[i][0]);
+				stringBuilder.append(abc[i][1]);
 				stringBuilder.append(" 00:00:00.000");
 				stringBuilder.append("\",\"topen\":\"");
-				stringBuilder.append(abc[i][1]);
-				stringBuilder.append("\",\"tclose\":\"");
 				stringBuilder.append(abc[i][2]);
+				stringBuilder.append("\",\"tclose\":\"");
+				stringBuilder.append(abc[i][3]);
 				stringBuilder.append("\",\"minclose\":\"");
-				stringBuilder.append(abc[i][5]);
+				stringBuilder.append(abc[i][4]);
 				stringBuilder.append("\",\"maxclose\":\"");
-				stringBuilder.append(abc[i][6]);
+				stringBuilder.append(abc[i][5]);
 				stringBuilder.append("\",\"qty\":\"");
-				stringBuilder.append(abc[i][7]);
+				stringBuilder.append(abc[i][6]);
 				stringBuilder.append("\",\"amount\":\"");
-				stringBuilder.append(abc[i][8]);
+				stringBuilder.append(abc[i][7]);
 				stringBuilder.append("\"},");
 				if(abc[i+1][0]==null)
 				{

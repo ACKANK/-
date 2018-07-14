@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.el.stream.Stream;
 import org.bson.Document;
 
 import com.mongodb.MongoClient;
@@ -18,18 +19,37 @@ import com.mongodb.client.MongoDatabase;
 public class MongoDBJDBC {
 
 	public static void main(String args[]) {
-		Stock stock = new Stock();
-		stock.setSname("cn_300228");
-		stock.setCollection("test1");
-		stock.setDatabase("mydata");
-		stock.setStartday("20161030");
-		stock.setEndday("20161224");
-		MongoDBJDBC mongo = new MongoDBJDBC();
-		mongo.readurldata(stock);
-		mongo.insertdata(stock);
-
+/*
+		for (int i = 000001; i < 4001; i++) {
+			StringBuffer abc=new StringBuffer();
+			abc.append("cn_");
+			abc.append(String.format("%6d", i).replace(" ", "0"));
+			Stock stock = new Stock();
+			stock.setSname(abc.toString());
+			stock.setCollection(abc.toString());
+			stock.setDatabase("mydata");
+			stock.setStartday("20131020");
+			stock.setEndday("20131030");
+			MongoDBJDBC mongo = new MongoDBJDBC();
+			mongo.readurldata(stock);
+			mongo.insertdata(stock);
+		}*/
 		
-
+		Stock stock = new Stock();
+		stock.setSname("cn_000001");
+		stock.setCollection("cn_000001");
+		stock.setDatabase("mydata");
+		stock.setStartday("20141010");
+		stock.setEndday("20141130");
+		MongoDBJDBC mongo = new MongoDBJDBC();
+		mongo.finddata(stock);
+		String[][] aaa=stock.getData();
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 11; j++) {
+				System.out.println(aaa[i][j]);
+				System.out.println(i+"    "+j);
+			}
+		}
 	}
 	//bString用来储存从API中读取并经过处理的数据
 		String[] bStrings;
@@ -81,7 +101,7 @@ public class MongoDBJDBC {
 				MongoCollection<Document> collection = mongoDatabase.getCollection(stock.getCollection());
 				int b = 0;
 				for (int i = 0; i < bStrings.length / 2 - 10; i = i + 10, b = b + 10) {
-					Document document = new Document("日期", bStrings[b]).append("开盘价 ", bStrings[b + 1])
+					Document document = new Document("股票代码",stock.sname).append("日期",bStrings[b]).append("开盘价 ", bStrings[b + 1])
 							.append("收盘价", bStrings[b + 2]).append("涨跌额", bStrings[b + 3]).append("涨跌幅度", bStrings[b + 4])
 							.append("最低价", bStrings[b + 5]).append("最高价", bStrings[b + 6]).append("成交量", bStrings[b + 7])
 							.append("成交金额", bStrings[b + 8]).append("转手率", bStrings[b + 9]);
@@ -99,10 +119,11 @@ public class MongoDBJDBC {
 	// 从数据库中读取数据，数据返回到stock对象中的data里，结构为二维字符串数组
 	public Stock readdata(Stock stock) {
 		int a = 0;
-		int b = 0;
+		int j=0;
+		int i=0;
 		String abc = null;
-		String[][] abcd = new String[50][30];
-		int i = 0;
+		String[][] abcd = new String[100][22];
+
 		// 连接到 mongodb 服务
 		MongoClient mongoClient = new MongoClient("localhost", 27017);
 
@@ -114,30 +135,38 @@ public class MongoDBJDBC {
 			FindIterable<Document> findIterable = collection.find();
 			MongoCursor<Document> mongoCursor = findIterable.iterator();
 			// 从数据库中读取数据，并转成字符串数组存储，split完成分割字符串任务
-			while (mongoCursor.hasNext()) {
-				Object o = mongoCursor.next();
-				abc = String.valueOf(o);
+
+/*			for(i=0;;) {
+				
+			}*/
+			do {
+				try {
+					Object o = mongoCursor.next();
+					abc = String.valueOf(o);
+				} catch (Exception e) {
+					break;
+				}
 				abcd[i] = abc.split("=|,|}");
-				i++;
-			}
-
+				j++;i++;
+			} while (i<100);
+			
 			// aaa用来存储整理好的数据
-			String[][] aaa = new String[35][10];
-			// 3579
-
-			for (a = 0; a < 35; a++) {
-				aaa[a][0] = abcd[a][3];
-				aaa[a][1] = abcd[a][5];
-				aaa[a][2] = abcd[a][7];
-				aaa[a][3] = abcd[a][9];
-				aaa[a][4] = abcd[a][11];
-				aaa[a][5] = abcd[a][13];
-				aaa[a][6] = abcd[a][15];
-				aaa[a][7] = abcd[a][17];
-				aaa[a][8] = abcd[a][19];
-				aaa[a][9] = abcd[a][21];
+			String[][] aaa=new String[j][11];	
+			for (i = 0; i < j; i++) {
+				aaa[i][0]=stock.sname ;
+				aaa[i][1] = abcd[i][3];
+				aaa[i][2] = abcd[i][5];
+				aaa[i][3] = abcd[i][7];
+				aaa[i][4] = abcd[i][9];
+				aaa[i][5] = abcd[i][11];
+				aaa[i][6] = abcd[i][13];
+				aaa[i][7] = abcd[i][15];
+				aaa[i][8] = abcd[i][17];
+				aaa[i][9] = abcd[i][19];
+				aaa[i][10] = abcd[i][21];	
 			}
-			// System.out.println(aaa[0][0]);
+
+
 			stock.setData(aaa);
 			return stock;
 		} catch (Exception e) {
@@ -147,7 +176,6 @@ public class MongoDBJDBC {
 
 	}
 
-	// 查询数据方法
 	public Stock finddata(Stock stock) {
 
 		// 从数据库中读出二维数组
@@ -217,10 +245,11 @@ public class MongoDBJDBC {
 				i = i + 2;
 				j = j + 1;
 			}
-			String[][] abc = new String[aaa.length / 10][10];
+			String[][] abc = new String[aaa.length / 10][11];
 
 			for (i = 0, k = 0; i < aaa.length / 10; i++) {
-				for (j = 0; j < 10; j++, k++) {
+				for (j = 1; j < 11; j++, k++) {
+					abc[i][0]=stock.sname;
 					abc[i][j] = aaa[k];
 				}
 			}
